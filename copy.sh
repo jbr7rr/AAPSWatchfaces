@@ -7,23 +7,28 @@ if [ "$#" -ne 1 ]; then
 fi
 
 # Destination directory
-dest_dir="/run/user/1000/gvfs/mtp:host=Google_Pixel_6_Pro_1B011FDEE004MB/Interne gedeelde opslag/AAPS/exports"
+dest_dir="/run/user/1000/gvfs/mtp:host=motorola_motorola_edge_40_ZY22HW2Z83/Interne gedeelde opslag/AAPS/exports"
 
 # Create a zip filename based on the given path
 zip_file_name=$(basename "$1")".zip"
 
-# Check if the files exist in the given path
-if [[ ! -f "$1/CustomWatchface.json" ]] || [[ ! -f "$1/CustomWatchface.png" ]]; then
-    echo "Error: CustomWatchface.json or CustomWatchface.png not found in $1."
+# Check if the directory exists
+if [ ! -d "$1" ]; then
+    echo "Error: Directory $1 does not exist."
     exit 1
 fi
 
-# Compress the files into a zip file
+# Check if the JSON file exists
+if [ ! -f "$1/CustomWatchface.json" ]; then
+    echo "Warning: CustomWatchface.json not found in $1."
+fi
+
+# Compress all .png files and CustomWatchface.json into a zip file
 # The -j option is used to junk (do not store) directory names, and the -9 option is used for best compression
-zip -j -9 -r "$zip_file_name" "$1/CustomWatchface.json" "$1/CustomWatchface.png"
+zip -j -9 "$zip_file_name" "$1"/*.png "$1/CustomWatchface.json"
 
 # Check if zip command was successful
-if [[ $? -ne 0 ]]; then
+if [ $? -ne 0 ]; then
     echo "Error: Failed to create zip"
     exit 2
 fi
@@ -32,7 +37,7 @@ fi
 cp -f "$zip_file_name" "$dest_dir"
 
 # Check if copy command was successful
-if [[ $? -ne 0 ]]; then
+if [ $? -ne 0 ]; then
     echo "Error: Failed to copy zip to the destination."
     exit 3
 fi
